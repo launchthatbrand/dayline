@@ -1,0 +1,126 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dayline-api
+  namespace: launchthat
+  labels:
+    app: dayline-api
+spec:
+  selector:
+    app: dayline-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dayline-api
+  namespace: launchthat
+  labels:
+    app: dayline-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dayline-api
+  template:
+    metadata:
+      labels:
+        app: dayline-api
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull
+      containers:
+        - name: dayline-api
+          image: ghcr.io/launchthatbrand/dayline-api:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: DAYLINE_MODE
+              value: api
+            - name: DAYLINE_MYSQL_URL
+              value: jdbc:mysql://dayline-mysql:3306/dayline?sslMode=DISABLED&allowPublicKeyRetrieval=true
+            - name: DAYLINE_MYSQL_USER
+              value: dayline
+            - name: DAYLINE_MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dayline-env
+                  key: MYSQL_PASSWORD
+            - name: DAYLINE_KAFKA
+              value: dayline-kafka:9092
+            - name: DAYLINE_DYNAMO_ENDPOINT
+              value: http://dayline-dynamodb:8000
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 24
+          resources:
+            requests:
+              cpu: 50m
+              memory: 192Mi
+            limits:
+              memory: 384Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dayline-stream
+  namespace: launchthat
+  labels:
+    app: dayline-stream
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dayline-stream
+  template:
+    metadata:
+      labels:
+        app: dayline-stream
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull
+      containers:
+        - name: dayline-stream
+          image: ghcr.io/launchthatbrand/dayline-api:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: DAYLINE_MODE
+              value: stream
+            - name: DAYLINE_MYSQL_URL
+              value: jdbc:mysql://dayline-mysql:3306/dayline?sslMode=DISABLED&allowPublicKeyRetrieval=true
+            - name: DAYLINE_MYSQL_USER
+              value: dayline
+            - name: DAYLINE_MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dayline-env
+                  key: MYSQL_PASSWORD
+            - name: DAYLINE_KAFKA
+              value: dayline-kafka:9092
+            - name: DAYLINE_DYNAMO_ENDPOINT
+              value: http://dayline-dynamodb:8000
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 24
+          resources:
+            requests:
+              cpu: 50m
+              memory: 192Mi
+            limits:
+              memory: 384Mi

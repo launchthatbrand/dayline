@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: ${DAYLINE_MYSQL_URL:jdbc:mysql://localhost:3306/dayline?sslMode=DISABLED&allowPublicKeyRetrieval=true}
+    username: ${DAYLINE_MYSQL_USER:dayline}
+    password: ${DAYLINE_MYSQL_PASSWORD:dayline}
+    hikari:
+      maximum-pool-size: 5
+  sql:
+    init:
+      mode: always
+
+dayline:
+  mode: ${DAYLINE_MODE:all}
+  kafka:
+    bootstrap-servers: ${DAYLINE_KAFKA:localhost:9092}
+    events-topic: guest.events
+    dead-topic: guest.events.dlq
+  dynamo:
+    endpoint: ${DAYLINE_DYNAMO_ENDPOINT:http://localhost:8000}
+    table: itinerary
+    region: us-east-1
