@@ -72,7 +72,7 @@ export default function HomePage() {
   const [stats, setStats] = useState<Stats>(emptyStats);
   const [guestId, setGuestId] = useState("");
   const [items, setItems] = useState<ItineraryItem[]>([]);
-  const [note, setNote] = useState("Open a return window, then book a guest.");
+  const [note, setNote] = useState("MySQL holds the seats. The day on the left is the DynamoDB projection.");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -342,7 +342,7 @@ function Count({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-line bg-card px-4 py-3">
       <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink/50">{label}</p>
-      <p className="font-display text-3xl">{value}</p>
+      <p className="font-mono text-3xl">{value}</p>
     </div>
   );
 }
